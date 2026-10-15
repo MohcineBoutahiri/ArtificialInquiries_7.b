@@ -1,222 +1,147 @@
-# Diagramme de classes — Artificial Inquiries Exercice 7B
 
-## Sujet
+# Diagramme de classes : Exercice 7B
 
-**Ollama vs LM Studio — comparaison de deux environnements d'exécution de LLM locaux**
+**Projet :** Artificial Inquiries  
+**Sujet :** Choosing the Models  
+**Objectif :** sélectionner quatre modèles d'IA et préparer leur comparaison à partir d'instructions identiques.
 
-Ce diagramme représente les principales données nécessaires pour réaliser et documenter les expériences du projet.
+## 1. Diagramme de classes
 
 ```mermaid
 classDiagram
     direction LR
 
-    class Task {
+    class ModeleIA {
         +String id
-        +String title
-        +String description
-        +String prompt
-        +String category
-    }
-
-    class Runtime {
-        +String id
-        +String name
-        +String version
-        +String endpoint
-    }
-
-    class Model {
-        +String id
-        +String name
-        +String family
-        +String quantization
+        +String nom
+        +String fournisseur
         +String version
     }
 
-    class Experiment {
+    class Tache {
         +String id
-        +DateTime date
-        +Float temperature
-        +Int maxTokens
-        +String status
+        +String titre
+        +String instruction
     }
 
-    class Result {
+    class Test {
         +String id
-        +Boolean success
-        +Float responseTime
-        +Float tokensPerSecond
-        +String response
-        +String error
+        +String promptUtilise
+        +String mode
+        +Date dateTest
     }
 
-    class Evaluation {
+    class Reponse {
         +String id
-        +Int correctness
-        +Int instructionFollowing
-        +Int clarity
-        +Int usability
-        +String notes
+        +String contenu
+        +String statut
     }
 
-    Task "1" --> "0..*" Experiment : est testée dans
-    Runtime "1" --> "0..*" Experiment : exécute
-    Model "1" --> "0..*" Experiment : utilise
-
-    Experiment "1" --> "1" Result : produit
-    Result "1" --> "0..1" Evaluation : est évalué par
+    Tache "1" --> "0..*" Test : est testee dans
+    Test "0..*" --> "1..4" ModeleIA : utilise
+    Test "1" *-- "0..4" Reponse : enregistre
+    ModeleIA "1" --> "0..*" Reponse : produit
 ```
 
-## Description des classes
+## 2. Description des classes
 
-### Task
+### ModeleIA
+Représente les modèles sélectionnés pour l'exercice :
 
-Représente une tâche utilisée dans le benchmark.
+- ChatGPT — OpenAI
+- Claude — Anthropic
+- Mistral — Mistral AI
+- Kimi — Moonshot AI
 
-Exemples :
+Chaque modèle possède un identifiant, un nom, un fournisseur et une version.
 
-- explication d'un concept ;
-- génération de code Python ;
-- résumé d'un texte ;
-- raisonnement simple.
+### Tache
+Représente une tâche à réaliser par les modèles.
 
-Une tâche contient principalement le prompt qui sera envoyé aux deux runtimes.
+Chaque tâche contient :
+- Un identifiant
+- Un titre
+- Une instruction (prompt)
 
----
+Les instructions définitives proviendront de l'exercice 7A.
 
-### Runtime
+### Test
+Représente une exécution d'une tâche avec un ou plusieurs modèles.
 
-Représente l'environnement utilisé pour exécuter le modèle.
+Il contient :
+- Un identifiant
+- Le prompt utilisé
+- Le mode de test : individuel ou simultané
+- La date du test
 
-Dans ce projet, les deux runtimes principaux sont :
+### Reponse
+Stocke le résultat généré par un modèle.
 
-- **Ollama**
-- **LM Studio**
+Elle contient :
+- Un identifiant
+- Le contenu de la réponse
+- Le statut (réussite ou erreur)
 
-Le runtime constitue la principale variable étudiée dans l'expérience.
+Chaque réponse est associée à un test et à un modèle.
 
----
+## 3. Fonctionnement de l'application
 
-### Model
+L'application proposera une interface simple :
 
-Représente le modèle de langage local utilisé pendant le test.
+**Étape 1 — Saisie du prompt**
 
-Exemples :
+L'utilisateur sélectionne une tâche ou saisit directement une instruction dans un champ de texte.
 
-- Llama ;
-- Mistral ;
-- Qwen.
+**Étape 2 — Sélection des modèles**
 
-Pour une comparaison équitable, le même modèle et la même quantification doivent être utilisés autant que possible dans Ollama et LM Studio.
+Deux possibilités :
+- Tester un modèle individuellement.
+- Tester les quatre modèles en même temps.
 
----
+**Étape 3 — Exécution**
 
-### Experiment
+Le même prompt est envoyé aux modèles sélectionnés.
 
-Représente l'exécution d'une tâche dans une configuration précise.
+En mode simultané, les quatre appels aux modèles pourront être lancés en parallèle.
 
-Une expérience associe :
+**Étape 4 — Enregistrement**
 
-- une tâche ;
-- un runtime ;
-- un modèle ;
-- des paramètres de génération.
+Chaque réponse est enregistrée avec :
+- Le modèle utilisé
+- Le test correspondant
+- Le contenu généré
+- Le statut de l'exécution
 
-Exemple :
+**Étape 5 — Consultation**
 
-```text
-EXP001
-Task : T1
-Runtime : Ollama
-Model : Mistral
-Temperature : 0.2
-Max Tokens : 512
-```
+Les réponses pourront être affichées côte à côte pour faciliter leur comparaison.
 
----
+## 4. Relations entre les classes
 
-### Result
+- Une tâche peut être utilisée dans plusieurs tests.
+- Un test concerne un seul modèle ou les quatre modèles.
+- Un test peut enregistrer jusqu'à quatre réponses.
+- Un modèle peut produire plusieurs réponses dans différents tests.
+- Chaque réponse appartient à un seul test et à un seul modèle.
 
-Représente le résultat produit par une expérience.
+Un modèle produit au maximum une réponse par test.
 
-Il peut contenir :
+## 5. Intégration avec Omeka S
 
-- la réponse générée ;
-- le temps de réponse ;
-- le succès ou l'échec ;
-- les tokens par seconde si disponibles ;
-- un éventuel message d'erreur.
+Les données seront organisées dans Omeka S à l'aide de ressources et de relations.
 
----
+Les modèles, tâches, tests et réponses pourront être représentés par des items liés entre eux.
 
-### Evaluation
+Les appels aux API des modèles seront réalisés par une application externe. Omeka S servira à stocker, organiser et consulter les résultats.
 
-Représente l'évaluation qualitative du résultat.
+## 6. Résultat attendu
 
-Les critères prévus sont :
+L'objectif est de préparer un système permettant :
 
-- correction ;
-- respect de la consigne ;
-- clarté ;
-- facilité d'utilisation ;
-- observations.
+1. De sélectionner les modèles d'IA.
+2. De saisir une instruction commune.
+3. De lancer un test individuel ou simultané.
+4. D'enregistrer les réponses obtenues.
+5. De consulter et comparer les résultats.
 
----
-
-## Relations principales
-
-Le fonctionnement général est :
-
-```text
-Task
-  │
-  ▼
-Experiment ◄── Runtime
-  ▲
-  │
-Model
-  │
-  ▼
-Result
-  │
-  ▼
-Evaluation
-```
-
-Une même tâche peut être exécutée plusieurs fois.
-
-Par exemple :
-
-```text
-T1
-├── Ollama + Mistral
-└── LM Studio + Mistral
-```
-
-Cela permet de comparer les résultats des deux runtimes dans des conditions similaires.
-
-## Correspondance avec la méthodologie
-
-Le modèle de données suit la logique de l'expérience :
-
-```text
-Choisir une tâche
-        ↓
-Choisir le modèle
-        ↓
-Choisir le runtime
-        ↓
-Créer une expérience
-        ↓
-Exécuter le prompt
-        ↓
-Collecter le résultat
-        ↓
-Évaluer
-        ↓
-Comparer
-```
-
-L'objectif est de conserver autant que possible les mêmes conditions expérimentales et de faire varier principalement le runtime :
-
-**Ollama vs LM Studio**
+La sélection des modèles correspond à l'exercice 7B. L'exécution des tests et la collecte des réponses préparent le travail de l'exercice 8.
