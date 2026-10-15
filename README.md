@@ -1,4 +1,4 @@
-# Artificial Inquiries — Exercice 7B : Choosing the Models
+# Artificial Inquiries : Exercice 7B : Choosing the Models
 
 ## 1. Description de l'exercice
 
