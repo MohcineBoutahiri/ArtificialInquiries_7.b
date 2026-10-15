@@ -1,220 +1,100 @@
-# ArtificialInquiries_7B
+# Artificial Inquiries — Exercice 7B : Choosing the Models
 
-## Exercice 7B — Choosing the Models
+## 1. Description de l'exercice
 
-Ce repository correspond à l'exercice **7B — Choosing the Models**
-du document *Artificial Inquiries: A Vademecum for Workers in the Age of AI*.
+L'exercice 7B, intitulé **« Choosing the Models »**, fait partie du  *Artificial Inquiries*.
 
-L'objectif de cet exercice est de sélectionner plusieurs modèles ou exécutants
-afin de leur faire réaliser les mêmes tâches et de comparer ensuite leurs résultats.
+L'objectif est de sélectionner quatre modèles d'intelligence artificielle afin qu'ils puissent réaliser les mêmes tâches à partir d'instructions identiques.
 
-Dans le cadre de ce projet, l'exercice est adapté à une comparaison entre
-deux environnements d'exécution de modèles de langage locaux :
+Les tâches et les instructions seront fournies par les exercices précédents, notamment l'exercice 7A (*Writing Guidelines*).
 
-- Ollama
-- LM Studio
+Cet exercice permettra de préparer la comparaison des réponses générées par différents modèles d'IA.
 
----
+## 2. Présentation des modèles sélectionnés
 
-## Sujet
+### 2.1. ChatGPT — OpenAI
 
-**Ollama vs LM Studio**
+ChatGPT est un assistant d'intelligence artificielle développé par OpenAI.
 
-Le projet cherche à comparer deux solutions permettant d'exécuter
-des modèles de langage localement sur un ordinateur.
+Il est capable de comprendre des instructions, de générer des textes, de résumer des documents et d'analyser des informations.
 
-Ollama et LM Studio ne sont pas eux-mêmes des modèles de langage.
-Ce sont des environnements permettant de charger et d'exécuter
-des modèles locaux.
+Dans ce projet, ChatGPT servira de premier système de référence pour réaliser les tâches proposées.
 
-L'idée est donc de conserver autant que possible le même modèle,
-les mêmes tâches et les mêmes paramètres afin d'observer les différences
-liées principalement au runtime utilisé.
+**Site officiel :** https://chatgpt.com/
 
----
+### 2.2. Claude — Anthropic
 
-## Question de recherche
+Claude est un assistant d'intelligence artificielle développé par Anthropic.
 
-**Quelles différences peut-on observer entre Ollama et LM Studio
-lorsque le même modèle local réalise les mêmes tâches dans des conditions similaires ?**
+Il est conçu pour traiter des instructions complexes, analyser des documents et produire des réponses structurées.
 
-La comparaison peut porter notamment sur :
+Son utilisation permettra de comparer son traitement des tâches avec celui des autres systèmes.
 
-- le temps de réponse ;
-- la stabilité ;
-- la facilité d'utilisation ;
-- les erreurs rencontrées ;
-- la qualité des réponses ;
-- les performances disponibles ;
-- la gestion des modèles.
+**Site officiel :** https://claude.ai/
 
----
+### 2.3. Mistral — Mistral AI
 
-## Lien avec l'exercice 7B
+Mistral AI est une entreprise française spécialisée dans le développement de modèles d'intelligence artificielle.
 
-Dans le document *Artificial Inquiries*, l'exercice 7B demande de choisir
-plusieurs modèles ou exécutants qui réaliseront les quatre tâches préparées
-précédemment.
+Ses modèles permettent notamment de comprendre, analyser et générer du texte.
 
-Le principe est de conserver les mêmes tâches afin de pouvoir comparer
-les résultats obtenus.
+Dans cet exercice, nous utiliserons un modèle Mistral afin de diversifier les systèmes comparés.
 
-Dans cette adaptation :
+**Site officiel :** https://chat.mistral.ai/
 
-- Ollama représente un premier environnement d'exécution ;
-- LM Studio représente un second environnement d'exécution ;
-- le même modèle doit être utilisé lorsque cela est possible ;
-- les mêmes prompts doivent être envoyés aux deux runtimes.
+### 2.4. Kimi — Moonshot AI
 
-La variable principale étudiée devient donc le runtime utilisé.
+Kimi est un assistant d'intelligence artificielle développé par Moonshot AI, une entreprise chinoise.
 
----
+Il propose des fonctionnalités de compréhension de documents, de synthèse d'informations et de raisonnement.
 
-## Principe expérimental
+**Kimi a été choisi comme quatrième modèle** pour élargir la diversité des systèmes étudiés et comparer ses réponses avec celles de ChatGPT, Claude et Mistral.
 
-Pour rendre la comparaison la plus équitable possible, les conditions
-suivantes doivent rester identiques :
+**Site officiel :** https://www.kimi.com/
 
-- même ordinateur ;
-- même modèle ;
-- même quantification si possible ;
-- même prompt ;
-- même température ;
-- même nombre maximum de tokens ;
-- mêmes tâches.
+## 3. Méthode de réalisation
 
-La principale différence entre les expériences doit être :
+Pour réaliser cet exercice, nous suivrons les étapes suivantes :
 
-**Ollama vs LM Studio**
+1. Récupérer les quatre tâches et leurs instructions depuis l'exercice 7A.
+2. Utiliser provisoirement des données fictives pour préparer les tests.
+3. Documenter les quatre modèles sélectionnés : ChatGPT, Claude, Mistral et Kimi.
+4. Préciser les versions exactes des modèles utilisés pour les tests.
+5. Réaliser un diagramme de classes avec Mermaid pour représenter les données et leurs relations.
+6. Structurer les données au format JSON.
+7. Installer Omeka S en local et tester l'enregistrement des données.
+8. Remplacer les données fictives par les données définitives du groupe.
 
----
+Les modèles devront ensuite recevoir les mêmes instructions pour permettre une comparaison cohérente.
 
-## Tâches prévues
+## 4. Stack technique
 
-Plusieurs tâches simples peuvent être utilisées pour la comparaison.
+Les technologies utilisées pour réaliser cet exercice sont :
 
-### T1 — Explication générale
+| Technologie | Utilisation |
+|---|---|
+| GitHub | Hébergement et gestion du projet |
+| Markdown | Rédaction du README et de la documentation |
+| Mermaid | Création du diagramme de classes |
+| JSON | Structuration des données de test |
+| Omeka S | Organisation et gestion des ressources |
+| Apache | Serveur web local |
+| PHP | Exécution d'Omeka S |
+| MySQL | Base de données |
 
-Demander au modèle d'expliquer un concept simple.
+## 5. Résultat attendu
 
-Objectif :
 
-- observer la qualité générale de la réponse ;
-- mesurer le temps de génération.
+- Une sélection documentée de quatre modèles d'intelligence artificielle.
+- Un diagramme de classes représentant les données nécessaires.
+- Des données structurées pouvant être utilisées dans Omeka S.
 
-### T2 — Programmation
+Ces résultats serviront notamment à préparer l'exercice 8, consacré à la collecte des réponses produites par les modèles.
 
-Demander au modèle de produire un petit code Python.
+## 6. Ressources
 
-Objectif :
-
-- observer la capacité à suivre des instructions ;
-- comparer la qualité du code généré.
-
-### T3 — Résumé
-
-Fournir un texte et demander un résumé.
-
-Objectif :
-
-- tester la capacité de synthèse ;
-- comparer la précision des réponses.
-
-### T4 — Raisonnement simple
-
-Donner un petit problème nécessitant une explication structurée.
-
-Objectif :
-
-- observer le raisonnement ;
-- comparer la clarté des réponses.
+- [Documentation Omeka S](https://omeka.org/s/docs/user-manual/)
+- [Documentation Mermaid](https://mermaid.ai/open-source/syntax/classDiagram.html)
+- [Éditeur Mermaid Live](https://mermaid.live/)
 
 ---
-
-## Données à collecter
-
-Pour chaque expérience, les informations suivantes pourront être enregistrées :
-
-- identifiant de l'expérience ;
-- tâche utilisée ;
-- runtime utilisé ;
-- modèle utilisé ;
-- prompt ;
-- paramètres ;
-- date et heure ;
-- réussite ou erreur ;
-- temps de réponse ;
-- réponse générée ;
-- nombre de tokens si disponible ;
-- tokens par seconde si disponible ;
-- observations manuelles.
-
----
-
-## Évaluation
-
-L'évaluation peut être divisée en deux parties.
-
-### Mesures automatiques
-
-- temps de réponse ;
-- succès ou erreur ;
-- longueur de la réponse ;
-- tokens par seconde si disponibles.
-
-### Évaluation manuelle
-
-La réponse peut également être évaluée selon :
-
-- la correction ;
-- le respect de la consigne ;
-- la clarté ;
-- la qualité générale.
-
----
-
-## Architecture des données
-
-Les principales entités prévues pour l'exercice sont :
-
-- `Task`
-- `Runtime`
-- `Model`
-- `Experiment`
-- `Result`
-- `Evaluation`
-
-Le diagramme de classes correspondant est disponible dans :
-
-`diagram_class.md`
-
----
-
-## Omeka S
-
-Omeka S sera utilisé pour représenter et organiser les données produites
-pendant l'expérience.
-
-Il pourra permettre de stocker des informations telles que :
-
-- les tâches ;
-- les modèles ;
-- les runtimes ;
-- les expériences ;
-- les résultats ;
-- les évaluations.
-
-Un exemple de ressource pourrait être :
-
-```text
-Experiment ID: EXP001
-
-Task: T1
-
-Runtime: Ollama
-
-Model: Mistral
-
-Response Time: 4.2 s
-
-Success: Yes
