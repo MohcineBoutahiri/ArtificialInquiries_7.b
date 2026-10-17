@@ -1,0 +1,117 @@
+# Artificial Inquiries — Exercice 7B : Choosing the Models
+# Vocabulaire RDF/Turtle inspiré du modèle jdc.ttl
+# Les propriétés dcterms:title et dcterms:identifier sont réutilisées sans redéfinition.
+
+@prefix artinq: <https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+
+<https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#>
+    a owl:Ontology ;
+    dcterms:title "Artificial Inquiries" ;
+    rdfs:comment "Vocabulaire de l'exercice 7B : choix des modèles et préparation des tests."@fr .
+
+# --- Classes issues du diagramme Mermaid ---
+artinq:ModeleIA a rdfs:Class ;
+    rdfs:label "Modèle d'IA"@fr ;
+    rdfs:comment "Un des quatre modèles sélectionnés pour l'exercice 7B."@fr ;
+    vs:term_status "experimental" .
+
+artinq:Tache a rdfs:Class ;
+    rdfs:label "Tâche"@fr ;
+    rdfs:comment "Tâche et consigne reçues de l'exercice 7A ou saisies pour un test."@fr ;
+    vs:term_status "experimental" .
+
+artinq:Test a rdfs:Class ;
+    rdfs:label "Test"@fr ;
+    rdfs:comment "Lancement d'un même prompt sur un ou quatre modèles."@fr ;
+    vs:term_status "experimental" .
+
+artinq:Reponse a rdfs:Class ;
+    rdfs:label "Réponse"@fr ;
+    rdfs:comment "Résultat associé à un test et à un modèle précis."@fr ;
+    vs:term_status "experimental" .
+
+# --- Propriétés : ModeleIA ---
+artinq:fournisseur a rdf:Property ;
+    rdfs:label "Fournisseur"@fr ;
+    rdfs:domain artinq:ModeleIA ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+artinq:version a rdf:Property ;
+    rdfs:label "Version du modèle"@fr ;
+    rdfs:domain artinq:ModeleIA ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+# --- Propriétés : Tache ---
+artinq:instruction a rdf:Property ;
+    rdfs:label "Instruction (prompt)"@fr ;
+    rdfs:domain artinq:Tache ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+# --- Propriétés : Test ---
+artinq:promptUtilise a rdf:Property ;
+    rdfs:label "Prompt utilisé"@fr ;
+    rdfs:domain artinq:Test ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+artinq:mode a rdf:Property ;
+    rdfs:label "Mode de test"@fr ;
+    rdfs:comment "Valeurs proposées : individuel, simultané."@fr ;
+    rdfs:domain artinq:Test ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+artinq:dateTest a rdf:Property ;
+    rdfs:label "Date du test"@fr ;
+    rdfs:comment "Date/heure en ISO 8601, saisie comme texte si aucun module de date n'est installé."@fr ;
+    rdfs:domain artinq:Test ;
+    rdfs:range xsd:dateTime ;
+    vs:term_status "experimental" .
+
+artinq:concerneTache a rdf:Property ;
+    rdfs:label "Concerne la tâche"@fr ;
+    rdfs:domain artinq:Test ;
+    rdfs:range artinq:Tache ;
+    vs:term_status "experimental" .
+
+artinq:utiliseModele a rdf:Property ;
+    rdfs:label "Utilise le modèle"@fr ;
+    rdfs:comment "Plusieurs valeurs possibles pour un test simultané."@fr ;
+    rdfs:domain artinq:Test ;
+    rdfs:range artinq:ModeleIA ;
+    vs:term_status "experimental" .
+
+# --- Propriétés : Reponse ---
+artinq:contenu a rdf:Property ;
+    rdfs:label "Contenu de la réponse"@fr ;
+    rdfs:domain artinq:Reponse ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+artinq:statut a rdf:Property ;
+    rdfs:label "Statut de la réponse"@fr ;
+    rdfs:comment "Exemples : simulation, succes, erreur."@fr ;
+    rdfs:domain artinq:Reponse ;
+    rdfs:range xsd:string ;
+    vs:term_status "experimental" .
+
+artinq:reponseDeTest a rdf:Property ;
+    rdfs:label "Réponse du test"@fr ;
+    rdfs:domain artinq:Reponse ;
+    rdfs:range artinq:Test ;
+    vs:term_status "experimental" .
+
+artinq:produitePar a rdf:Property ;
+    rdfs:label "Produite par le modèle"@fr ;
+    rdfs:domain artinq:Reponse ;
+    rdfs:range artinq:ModeleIA ;
+    vs:term_status "experimental" .
