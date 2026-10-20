@@ -1,7 +1,3 @@
-# Artificial Inquiries — Exercice 7B : Choosing the Models
-# Vocabulaire RDF/Turtle inspiré du modèle jdc.ttl
-# Les propriétés dcterms:title et dcterms:identifier sont réutilisées sans redéfinition.
-
 @prefix artinq: <https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -15,7 +11,6 @@
     dcterms:title "Artificial Inquiries" ;
     rdfs:comment "Vocabulaire de l'exercice 7B : choix des modèles et préparation des tests."@fr .
 
-# --- Classes issues du diagramme Mermaid ---
 artinq:ModeleIA a rdfs:Class ;
     rdfs:label "Modèle d'IA"@fr ;
     rdfs:comment "Un des quatre modèles sélectionnés pour l'exercice 7B."@fr ;
@@ -36,7 +31,6 @@ artinq:Reponse a rdfs:Class ;
     rdfs:comment "Résultat associé à un test et à un modèle précis."@fr ;
     vs:term_status "experimental" .
 
-# --- Propriétés : ModeleIA ---
 artinq:fournisseur a rdf:Property ;
     rdfs:label "Fournisseur"@fr ;
     rdfs:domain artinq:ModeleIA ;
@@ -49,14 +43,12 @@ artinq:version a rdf:Property ;
     rdfs:range xsd:string ;
     vs:term_status "experimental" .
 
-# --- Propriétés : Tache ---
 artinq:instruction a rdf:Property ;
     rdfs:label "Instruction (prompt)"@fr ;
     rdfs:domain artinq:Tache ;
     rdfs:range xsd:string ;
     vs:term_status "experimental" .
 
-# --- Propriétés : Test ---
 artinq:promptUtilise a rdf:Property ;
     rdfs:label "Prompt utilisé"@fr ;
     rdfs:domain artinq:Test ;
@@ -90,7 +82,6 @@ artinq:utiliseModele a rdf:Property ;
     rdfs:range artinq:ModeleIA ;
     vs:term_status "experimental" .
 
-# --- Propriétés : Reponse ---
 artinq:contenu a rdf:Property ;
     rdfs:label "Contenu de la réponse"@fr ;
     rdfs:domain artinq:Reponse ;
