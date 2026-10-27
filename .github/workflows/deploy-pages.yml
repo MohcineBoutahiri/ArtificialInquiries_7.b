@@ -1,0 +1,115 @@
+name: Publish response interface to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify root HTML and prepare isolated Pages artifact
+        id: prepare
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+          import shutil
+          import subprocess
+          import tempfile
+          from html.parser import HTMLParser
+
+          class PublicHTML(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_script = False
+                  self.scripts = []
+                  self.content = []
+
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if tag == 'script' and 'src' in values:
+                      raise SystemExit('External script is not allowed in standalone HTML')
+                  if tag == 'link' and values.get('rel') == 'stylesheet':
+                      raise SystemExit('External stylesheet is not allowed')
+                  if tag == 'script':
+                      self.in_script = True
+                      self.content = []
+
+              def handle_data(self, data):
+                  if self.in_script:
+                      self.content.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag == 'script' and self.in_script:
+                      self.scripts.append(''.join(self.content))
+                      self.in_script = False
+
+          source = Path('response.html')
+          if source.is_symlink() or not source.is_file():
+              raise SystemExit('Missing root response.html or unexpected symbolic link')
+          forbidden = re.compile(
+              r'OMEKA_KEY_|key_identity|key_credential|BEGIN (?:RSA |OPENSSH )?PRIVATE KEY|'
+              r'\$argon2|\bghp_[A-Za-z0-9]{30,}|\bAKIA[A-Z0-9]{16}|'
+              r'''(?:accessToken|access_token|password|credential)\s*[:=]\s*["'][^"']+["']''',
+              re.I,
+          )
+          page = source.read_text(encoding='utf-8-sig')
+          if not page.lstrip().upper().startswith('<!DOCTYPE HTML>'):
+              raise SystemExit('Missing HTML doctype')
+          if forbidden.search(page):
+              raise SystemExit('Potential secret detected; publishing blocked')
+          parser = PublicHTML()
+          parser.feed(page)
+          if len(parser.scripts) != 1:
+              raise SystemExit('Expected one integrated JavaScript bundle')
+          subprocess.run(['node', '--check', '--input-type=commonjs'], input=parser.scripts[0], text=True, encoding='utf-8', check=True)
+          if '<style>' not in page or '<script>' not in page:
+              raise SystemExit('The prebuilt interface must contain its CSS and JavaScript')
+          # This directory is outside the checkout. Never upload the repository root.
+          public = Path(tempfile.mkdtemp(prefix='pages-', dir=os.environ['RUNNER_TEMP']))
+          shutil.copyfile(source, public / 'response.html')
+          index = (
+              '<!DOCTYPE html>\n<html lang="fr"><head><meta charset="utf-8">'
+              '<meta name="viewport" content="width=device-width, initial-scale=1">'
+              '<meta http-equiv="refresh" content="0; url=response.html">'
+              '<title>Artificial Inquiries</title></head><body>'
+              '<p><a href="response.html">Ouvrir la gestion des réponses</a></p>'
+              '</body></html>\n'
+          )
+          (public / 'index.html').write_text(index, encoding='utf-8')
+          if {p.name for p in public.iterdir()} != {'response.html', 'index.html'}:
+              raise SystemExit('Unexpected public artifact contents')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('artifact_path=' + str(public) + '\n')
+          print('Prepared response.html and generated redirect only; no repository files copied')
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.prepare.outputs.artifact_path }}
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Publish reviewed frontend
+        id: deployment
+        uses: actions/deploy-pages@v5
