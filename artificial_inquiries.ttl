@@ -12,7 +12,7 @@
     rdfs:comment "Vocabulaire de l'exercice 7B : choix des modèles et préparation des tests."@fr .
 
 artinq:LLM a rdfs:Class ;
-    rdfs:label "LLM"@fr ;
+    rdfs:label "Modèle de langage (LLM)"@fr ;
     rdfs:comment "Un des quatre modèles sélectionnés pour l'exercice 7B."@fr ;
     vs:term_status "experimental" .
 
