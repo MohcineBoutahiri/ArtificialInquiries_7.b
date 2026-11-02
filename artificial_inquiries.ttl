@@ -11,8 +11,8 @@
     dcterms:title "Artificial Inquiries" ;
     rdfs:comment "Vocabulaire de l'exercice 7B : choix des modèles et préparation des tests."@fr .
 
-artinq:ModeleIA a rdfs:Class ;
-    rdfs:label "Modèle d'IA"@fr ;
+artinq:LLM a rdfs:Class ;
+    rdfs:label "LLM"@fr ;
     rdfs:comment "Un des quatre modèles sélectionnés pour l'exercice 7B."@fr ;
     vs:term_status "experimental" .
 
@@ -33,13 +33,13 @@ artinq:Reponse a rdfs:Class ;
 
 artinq:fournisseur a rdf:Property ;
     rdfs:label "Fournisseur"@fr ;
-    rdfs:domain artinq:ModeleIA ;
+    rdfs:domain artinq:LLM ;
     rdfs:range xsd:string ;
     vs:term_status "experimental" .
 
 artinq:version a rdf:Property ;
     rdfs:label "Version du modèle"@fr ;
-    rdfs:domain artinq:ModeleIA ;
+    rdfs:domain artinq:LLM ;
     rdfs:range xsd:string ;
     vs:term_status "experimental" .
 
@@ -79,7 +79,7 @@ artinq:utiliseModele a rdf:Property ;
     rdfs:label "Utilise le modèle"@fr ;
     rdfs:comment "Plusieurs valeurs possibles pour un test simultané."@fr ;
     rdfs:domain artinq:Test ;
-    rdfs:range artinq:ModeleIA ;
+    rdfs:range artinq:LLM ;
     vs:term_status "experimental" .
 
 artinq:contenu a rdf:Property ;
@@ -104,5 +104,5 @@ artinq:reponseDeTest a rdf:Property ;
 artinq:produitePar a rdf:Property ;
     rdfs:label "Produite par le modèle"@fr ;
     rdfs:domain artinq:Reponse ;
-    rdfs:range artinq:ModeleIA ;
-    vs:term_status "experimental" .
+    rdfs:range artinq:LLM ;
+    vs:term_status "exp
