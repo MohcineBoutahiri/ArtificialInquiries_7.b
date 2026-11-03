@@ -60,9 +60,11 @@ jobs:
           if source.is_symlink() or not source.is_file():
               raise SystemExit('Missing root response.html or unexpected symbolic link')
           forbidden = re.compile(
-              r'OMEKA_KEY_|key_identity|key_credential|BEGIN (?:RSA |OPENSSH )?PRIVATE KEY|'
+              r'OMEKA_KEY_|BEGIN (?:RSA |OPENSSH )?PRIVATE KEY|'
               r'\$argon2|\bghp_[A-Za-z0-9]{30,}|\bAKIA[A-Z0-9]{16}|'
-              r'''(?:accessToken|access_token|password|credential)\s*[:=]\s*["'][^"']+["']''',
+              r'''(?:accessToken|access_token|password|credential|identity)\s*[:=]\s*["'][^"']+["']|'''
+              r'''[?&](?:key_identity|key_credential)=[^&\s"'<>]+|'''
+              r'''(?:key_identity|key_credential)["']?\s*[:=]\s*["'][^"']+["']''',
               re.I,
           )
           page = source.read_text(encoding='utf-8-sig')
@@ -74,6 +76,13 @@ jobs:
           parser.feed(page)
           if len(parser.scripts) != 1:
               raise SystemExit('Expected one integrated JavaScript bundle')
+          # Parameter names are legitimate; pre-filled credential inputs are not.
+          class CredentialInputs(HTMLParser):
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if tag == 'input' and values.get('id') in {'key-identity', 'key-credential'} and values.get('value'):
+                      raise SystemExit('Pre-filled API key detected; publishing blocked')
+          CredentialInputs().feed(page)
           subprocess.run(['node', '--check', '--input-type=commonjs'], input=parser.scripts[0], text=True, encoding='utf-8', check=True)
           if '<style>' not in page or '<script>' not in page:
               raise SystemExit('The prebuilt interface must contain its CSS and JavaScript')
