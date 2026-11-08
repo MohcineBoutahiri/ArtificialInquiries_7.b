@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Page autonome : HTML, CSS et JavaScript int?gr?s. Aucun backend suppl?mentaire. -->
+<!-- Interface HTML/CSS/JS autonome ; authentification et accès Omeka contrôlés par Flask. -->
 <html lang="fr">
 <head>
   <meta charset="utf-8">
@@ -721,14 +721,29 @@
     <div class="rsp-header__content">
       <div class="rsp-brand" aria-hidden="true">ai<span class="rsp-brand__dot">.</span></div>
       <div>
-<h1 class="rsp-header__title">Artificial Inquiries</h1>
-<p class="rsp-header__subtitle">Exercice 7B — Gestion des réponses</p></div>
+<h1 class="rsp-header__title">Artificial Inquiries — Exercice 7B</h1>
+<p id="app-subtitle" class="rsp-header__subtitle" hidden="">Gestion des réponses LLM</p></div>
     </div>
-    <div class="rsp-header__actions">
+    <div id="session-actions" class="rsp-header__actions" hidden="">
 <span id="connection-status" class="rsp-status" role="status">API non connectée</span>
 <button id="logout" class="rsp-button" type="button" disabled="">Déconnexion</button></div>
   </header>
   <main id="main" class="rsp-main">
+    <section id="professor-panel" class="rsp-login" aria-label="Connexion professeur">
+      <form id="professor-form" class="rsp-form">
+        <div class="rsp-form__group">
+          <label class="rsp-form__label" for="professor-email">Adresse e-mail</label>
+          <input id="professor-email" class="rsp-form__input" type="email" autocomplete="username" maxlength="254" required="">
+        </div>
+        <div class="rsp-form__group">
+          <label class="rsp-form__label" for="professor-password">Mot de passe</label>
+          <input id="professor-password" class="rsp-form__input" type="password" autocomplete="current-password" maxlength="1024" required="">
+        </div>
+        <button id="professor-submit" class="rsp-button rsp-button--primary" type="submit">Se connecter</button>
+        <p id="professor-error" class="rsp-notification rsp-notification--error" role="alert" hidden=""></p>
+      </form>
+    </section>
+    <div id="omeka-stage" hidden="">
     <div class="rsp-intro">
 <p class="rsp-eyebrow">ARTIFICIAL INQUIRIES / EXERCICE 7B</p>
 <h2 class="rsp-intro__title">Explorer les réponses.</h2>
@@ -741,7 +756,7 @@
         <div class="rsp-auth-grid">
           <div class="rsp-form__group rsp-auth-wide">
   <label class="rsp-form__label" for="api-url">URL de l’API</label>
-  <input id="api-url" class="rsp-form__input" type="text" value="https://humanum-p8.fr/omk_artificialinquiries/api" required="" spellcheck="false"></div>
+  <input id="api-url" class="rsp-form__input" type="text" value="https://humanum-p8.fr/omk_artificialinquiries/api" required="" spellcheck="false" readonly=""></div>
           <div class="rsp-form__group">
 <label class="rsp-form__label" for="key-identity">Identité API (key_identity)</label>
 <input id="key-identity" class="rsp-form__input" type="password" autocomplete="new-password" spellcheck="false" maxlength="256" aria-describedby="key-note"></div>
@@ -753,12 +768,13 @@
         </div>
         <div class="rsp-auth-actions">
 <button id="test-connection" class="rsp-button rsp-button--primary" type="submit">Tester la connexion</button>
-<button id="public-access" class="rsp-button" type="button">Consulter sans clés</button></div>
+</div>
       </form>
-      <p id="connection-message" class="rsp-connection__message" role="status">API non connectée. Testez la connexion ou consultez les données publiques sans clés.</p>
-      <p id="key-note" class="rsp-form__help">Les clés restent uniquement en mémoire jusqu’à la déconnexion. Omeka les transmet dans les paramètres HTTPS : elles peuvent apparaître dans les outils réseau et les journaux du serveur. Une page statique n’offre pas la confidentialité d’un backend.</p>
+      <p id="connection-message" class="rsp-connection__message" role="status">Connectez vos clés Omeka pour accéder aux réponses.</p>
+      <p id="key-note" class="rsp-form__help">Vos clés sont envoyées au serveur de connexion et conservées en mémoire pendant la session. Le navigateur ne les transmet jamais directement à Omeka. Déconnectez-vous après utilisation.</p>
     </section>
-    <section class="rsp-responses" aria-labelledby="responses-title">
+    </div>
+    <section id="crud-stage" class="rsp-responses" aria-labelledby="responses-title" hidden="">
       <div class="rsp-responses__header">
 <div>
 <p class="rsp-eyebrow">COLLECTION COMMUNE</p>
@@ -790,7 +806,7 @@
 <span>Source : Omeka S · Classe ou template Reponse</span>
 <span id="last-updated">En attente de lecture</span></div>
     </section>
-    <div class="rsp-note">
+    <div id="collection-note" class="rsp-note" hidden="">
 <span class="rsp-note__mark" aria-hidden="true">i</span>
 <p class="rsp-note__text">Protection de la collection : seules les réponses créées pendant cette session sont modifiables ou supprimables ici. Les ressources déjà présentes restent consultables. Après rechargement, utilisez l’administration Omeka pour gérer vos anciennes réponses. Sur mobile, faites défiler le tableau.</p></div>
     <noscript>
@@ -844,15 +860,17 @@
 <div class="rsp-dialog__footer">
 <button class="rsp-button" type="button" data-close="delete-dialog" autofocus="">Annuler</button>
 <button id="confirm-delete" class="rsp-button rsp-button--delete" type="button">Supprimer définitivement</button></div></dialog>
-  <footer class="rsp-footer">
+  <footer id="app-footer" class="rsp-footer" hidden="">
 <span>Artificial Inquiries · Exercice 7B</span>
-<span>GitHub Pages · API Omeka S directe</span></footer>
+<span>GitHub Pages · Connexion sécurisée</span></footer>
   <script>
 (() => {
   'use strict';
 
   // 1. Configuration — numeric identifiers are discovered, never assumed.
   const DEFAULT_API = 'https://humanum-p8.fr/omk_artificialinquiries/api';
+  // Backend HTTPS utilisé depuis GitHub Pages ; local et Alwaysdata restent à même origine.
+  const REMOTE_BACKEND_URL = 'https://artificialinquiries7b.alwaysdata.net';
   const FIELD_TERMS = {
     title: 'dcterms:title', identifier: 'dcterms:identifier',
     content: 'dcterms:description', status: 'artinq:statut', model: 'artinq:produitePar'
@@ -862,7 +880,8 @@
 
   // 2. Application state — no browser storage, cookies or persistent secrets.
   const state = {
-    api: DEFAULT_API, keys: null, verified: false, connected: false,
+    api: DEFAULT_API, verified: false, connected: false,
+    professor: false, sessionToken: '', expirationTimer: null, loginPending: false,
     generation: 0, controllers: new Set(), schema: null,
     models: [], responses: [], managed: new Map(), editor: null, deletion: null,
     busy: false, loading: false, connecting: false, dialogLoading: false, mutationSent: false
@@ -891,12 +910,21 @@
   function syncControls() {
     const busy = state.busy || state.connecting || state.loading || state.dialogLoading;
     byId('test-connection').disabled = busy || state.verified;
-    byId('public-access').disabled = busy || state.verified;
+    byId('professor-panel').hidden = state.professor;
+    byId('omeka-stage').hidden = !state.professor;
+    byId('session-actions').hidden = !state.professor;
+    byId('app-subtitle').hidden = !state.professor;
+    byId('crud-stage').hidden = !state.professor || !state.verified;
+    byId('collection-note').hidden = !state.professor || !state.verified;
+    byId('app-footer').hidden = !state.professor;
+    byId('professor-submit').disabled = state.loginPending;
+    byId('professor-email').disabled = state.loginPending;
+    byId('professor-password').disabled = state.loginPending;
     byId('api-url').disabled = busy || state.connected;
     byId('key-identity').disabled = busy || state.verified;
     byId('key-credential').disabled = busy || state.verified;
     byId('toggle-key').disabled = busy || state.verified;
-    byId('logout').disabled = !state.connected && !state.connecting;
+    byId('logout').disabled = !state.professor;
     byId('refresh').disabled = !state.connected || busy;
     byId('refresh').textContent = state.loading ? 'Chargement…' : 'Actualiser';
     byId('test-connection').textContent = state.connecting ? 'Vérification…' : 'Tester la connexion';
@@ -909,7 +937,6 @@
 
   // 4. API keys — invalidate pending work and erase all session data on logout.
   function clearKeys() {
-    state.keys = null;
     state.verified = false;
     byId('key-identity').value = '';
     byId('key-credential').value = '';
@@ -942,76 +969,116 @@
     syncControls();
   }
   function validateApiUrl(value) {
-    let url;
-    try { url = new URL(value, location.origin); } catch { throw appError('URL de l’API invalide.'); }
-    if (url.origin === location.origin && ['127.0.0.1', 'localhost'].includes(url.hostname)
-      && url.port === '8085' && url.pathname === '/api' && !url.username && !url.password && !url.search && !url.hash) {
-      return url.href;
+    if (value.trim().replace(/\/$/, '') !== DEFAULT_API) throw appError('Seule l’API Omeka commune est autorisée.');
+    return DEFAULT_API;
+  }
+
+  function backendBaseUrl() {
+    if (['127.0.0.1', 'localhost'].includes(location.hostname) && location.protocol === 'http:') {
+      return location.port === '8085' ? location.origin : 'http://127.0.0.1:8085';
     }
-    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || !/\/api\/?$/.test(url.pathname)) {
-      throw appError('Indiquez une URL HTTPS se terminant par /api, sans clé, paramètre ni identifiant dans l’URL.');
+    if (location.origin === 'https://artificialinquiries7b.alwaysdata.net') {
+      return location.origin;
     }
+    if (!REMOTE_BACKEND_URL) throw appError('Serveur de connexion non configuré. Contactez le propriétaire du projet.');
+    const url = new URL(REMOTE_BACKEND_URL);
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) throw appError('Configuration HTTPS du serveur invalide.');
     return url.href.replace(/\/$/, '');
   }
 
-  // 5. HTTP client — authenticated calls go only to the selected API; no redirects.
-  async function request(endpoint, { method = 'GET', query = {}, body, auth = state.verified } = {}) {
-    if (!/^(items|properties|resource_classes|resource_templates|users)(\/\d+)?$/.test(endpoint)) {
-      throw appError('Endpoint Omeka non autorisé.');
-    }
+  function resetProfessorSession(message = '') {
+    clearTimeout(state.expirationTimer);
+    state.sessionToken = '';
+    state.professor = false;
+    state.loginPending = false;
+    state.expirationTimer = null;
+    byId('professor-password').value = '';
+    disconnect();
+    showMessage('professor-error', message, Boolean(message));
+  }
+
+  async function backendRequest(path, { method = 'GET', query = {}, body, anonymous = false } = {}) {
     const generation = state.generation;
-    const url = new URL(`${state.api}/${endpoint}`, location.origin);
+    const url = new URL(backendBaseUrl() + path);
     for (const [name, value] of Object.entries(query)) url.searchParams.set(name, String(value));
-    if (auth) {
-      if (!state.keys) throw appError('Reconnectez vos clés Omeka S.');
-      url.searchParams.set('key_identity', state.keys.identity);
-      url.searchParams.set('key_credential', state.keys.credential);
-    }
+    if (!anonymous && !state.sessionToken) throw appError('Connexion professeur requise.', 401);
     const controller = new AbortController();
     state.controllers.add(controller);
-    const timer = setTimeout(() => controller.abort(), 25000);
+    const timer = setTimeout(() => controller.abort(), 120000);
     try {
       let response;
       try {
-        if (method !== 'GET') {
-          if (!auth || !state.verified) throw appError('Authentification requise pour modifier les réponses.');
-          state.mutationSent = true;
-        }
-        response = await fetch(url.href, { method, credentials: 'omit', redirect: 'error',
-          cache: 'no-store', referrerPolicy: 'no-referrer', signal: controller.signal,
-          headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
-          ...(body ? { body: JSON.stringify(body) } : {}) });
-      } catch (error) {
-        if (controller.signal.aborted) throw appError('Requête annulée ou délai de réponse dépassé (25 secondes).');
-        if (error.status !== undefined) throw error;
-        throw appError(`API non connectée : serveur indisponible ou requête bloquée par CORS. Si la console indique un blocage CORS, l’administrateur Omeka doit autoriser l’origine ${location.origin}. Aucun contournement n’est appliqué ; consultez l’onglet Réseau pour identifier la cause.`);
+        response = await fetch(url.href, {
+          method, credentials: 'omit', redirect: 'error', cache: 'no-store', referrerPolicy: 'no-referrer',
+          signal: controller.signal,
+          headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json' } : {}),
+            ...(!anonymous ? { Authorization: `Bearer ${state.sessionToken}` } : {}) },
+          ...(body ? { body: JSON.stringify(body) } : {})
+        });
+      } catch {
+        throw appError('Serveur de connexion inaccessible : vérifiez le démarrage de Flask, le réseau ou les autorisations CORS du backend.');
       }
       if (generation !== state.generation) throw appError('Session interrompue.');
-      if (!response.ok) {
-        const messages = {
-          400: 'Requête refusée : vérifiez les champs et les contraintes du template Omeka.',
-          401: 'Clés API invalides ou expirées.',
-          403: 'Accès refusé : permissions insuffisantes (ou authentification non validée par le serveur).',
-          404: 'Ressource Omeka introuvable.',
-          409: 'Conflit : rechargez la réponse avant de réessayer.',
-          422: 'Données refusées : vérifiez les valeurs et les types RDF.'
-        };
-        // Never display raw server errors: they can contain credential-bearing URLs.
-        if (response.status === 401 && auth && state.verified) {
-          disconnect('Clés API invalides ou expirées. Reconnectez-vous.');
-        }
-        throw appError(messages[response.status] || `Erreur du serveur Omeka (HTTP ${response.status}).`, response.status);
-      }
-      if (response.status === 204) return null;
+      if (response.status === 204 && response.ok) return null;
       let data;
       try { data = await response.json(); }
-      catch { throw appError('Réponse JSON invalide : le serveur n’a pas renvoyé les données Omeka attendues.'); }
+      catch { throw appError('Réponse JSON du serveur de connexion invalide.'); }
       if (generation !== state.generation) throw appError('Session interrompue.');
+      if (!response.ok) {
+        const message = typeof data?.message === 'string' ? data.message : 'Opération refusée par le serveur.';
+        if (data?.code === 'session_required') resetProfessorSession('Session expirée. Connectez-vous à nouveau.');
+        if (data?.code === 'omeka_required') {
+          clearKeys(); state.connected = false; state.schema = null; state.responses = [];
+          byId('responses-body').replaceChildren(); syncControls();
+        }
+        throw Object.assign(appError(message, response.status), { code: data?.code });
+      }
       return data;
     } finally {
       clearTimeout(timer);
       state.controllers.delete(controller);
     }
+  }
+
+  async function loginProfessor(event) {
+    event.preventDefault();
+    if (state.loginPending || !byId('professor-form').reportValidity()) return;
+    state.loginPending = true;
+    const email = byId('professor-email').value.trim();
+    const password = byId('professor-password').value;
+    byId('professor-password').value = '';
+    showMessage('professor-error', '');
+    syncControls();
+    try {
+      const result = await backendRequest('/auth/login', { method: 'POST', body: { email, password }, anonymous: true });
+      if (typeof result?.token !== 'string' || result.token.length < 32 || !Number.isFinite(result.expires_in) || result.expires_in <= 0) throw appError('Session renvoyée par le serveur invalide.');
+      state.sessionToken = result.token;
+      const status = await backendRequest('/auth/status');
+      if (status.authenticated !== true) throw appError('Session professeur non validée.');
+      state.professor = true;
+      state.expirationTimer = setTimeout(() => resetProfessorSession('Session expirée. Connectez-vous à nouveau.'), result.expires_in * 1000);
+      setConnection('Professeur connecté', 'Saisissez les clés Omeka S pour accéder aux réponses.');
+    } catch (error) {
+      resetProfessorSession(error.status === 401 ? 'Adresse e-mail ou mot de passe incorrect.' : error.message);
+    } finally {
+      state.loginPending = false;
+      syncControls();
+    }
+  }
+
+  async function logoutProfessor() {
+    const generation = state.generation;
+    try { if (state.sessionToken) await backendRequest('/auth/logout', { method: 'POST' }); }
+    catch { /* La mémoire locale est effacée même si le serveur est inaccessible. */ }
+    finally { if (generation === state.generation) resetProfessorSession(); }
+  }
+
+  // Chaque appel CRUD passe par Flask, avec le jeton professeur. Aucune clé dans l’URL.
+  async function request(endpoint, { method = 'GET', query = {}, body } = {}) {
+    if (!/^(items|properties|resource_classes|resource_templates)(\/[1-9]\d*)?$/.test(endpoint)) throw appError('Endpoint Omeka non autorisé.');
+    if (!state.professor || !state.verified) throw appError('Les deux connexions sont requises.', 403);
+    if (method !== 'GET') state.mutationSent = true;
+    return backendRequest(`/api/${endpoint}`, { method, query, body });
   }
   async function getAll(endpoint, query = {}, auth = state.verified) {
     const rows = [];
@@ -1031,23 +1098,6 @@
     }
     throw appError('Collection trop volumineuse : affinez la sélection dans Omeka.');
   }
-  async function probeAuthentication() {
-    let anonymousDenied = false;
-    try {
-      const data = await request('users', { query: { per_page: 1 }, auth: false });
-      if (!Array.isArray(data)) throw appError('Réponse utilisateurs invalide.');
-    } catch (error) {
-      if (![401, 403].includes(error.status)) throw error;
-      anonymousDenied = true;
-    }
-    const users = await request('users', { query: { per_page: 1 }, auth: true });
-    if (!Array.isArray(users) || !users.length || !Number.isSafeInteger(users[0]?.['o:id'])) {
-      throw appError('Authentification non vérifiée : réponse du point de contrôle invalide.');
-    }
-    if (!anonymousDenied) throw appError('API publique accessible, mais /users est également public : impossible de prouver l’authentification. Écritures désactivées.');
-    state.verified = true;
-  }
-
   // 6. JSON-LD parsing — preserve original arrays; show missing values honestly.
   function values(item, term) { return Array.isArray(item?.[term]) ? item[term] : []; }
   function literal(item, term) { return values(item, term).map(value => value['@value']).filter(value => typeof value === 'string').join('\n'); }
@@ -1155,50 +1205,36 @@
       byId('responses-body').setAttribute('aria-busy', 'false');
     }
   }
-  async function connect(publicOnly = false) {
-    if (state.connecting || state.busy || state.loading) return;
+  async function connect() {
+    if (!state.professor || state.connecting || state.busy || state.loading || state.verified) return;
     if (!byId('connection-form').reportValidity()) return;
     let api;
-    try { api = validateApiUrl(byId('api-url').value.trim()); }
+    try { api = validateApiUrl(byId('api-url').value); }
     catch (error) { setConnection('API non connectée', error.message, 'invalid'); return; }
-    const identity = publicOnly ? '' : byId('key-identity').value.trim();
-    const credential = publicOnly ? '' : byId('key-credential').value.trim();
-    if (!publicOnly && (!identity || !credential)) {
-      setConnection('API non connectée', 'Saisissez les deux clés, ou choisissez « Consulter sans clés ».'); return;
+    const key_identity = byId('key-identity').value.trim();
+    const key_credential = byId('key-credential').value.trim();
+    byId('key-identity').value = '';
+    byId('key-credential').value = '';
+    if (!key_identity || !key_credential) {
+      setConnection('API non connectée', 'Renseignez les deux clés Omeka S.'); return;
     }
-    // An active session must be explicitly disconnected before changing API or keys.
-    if (state.verified) { showMessage('notification', 'Déconnectez-vous avant de changer les clés.', true); return; }
-    disconnect();
-    state.api = api;
     const generation = state.generation;
     state.connecting = true;
     syncControls();
-    setConnection('Vérification…', 'Vérification de l’accès public…', 'loading');
-    let publicOK = false;
+    setConnection('Vérification…', 'Le serveur vérifie réellement les clés auprès d’Omeka S.', 'loading');
     try {
-      const items = await request('items', { query: { per_page: 1 }, auth: false });
-      if (!Array.isArray(items)) throw appError('Réponse JSON invalide : une liste d’items est attendue.');
-      publicOK = true;
-      state.connected = true;
-      if (!publicOnly) {
-        state.keys = { identity, credential };
-        try { await probeAuthentication(); }
-        catch (error) {
-          if (generation !== state.generation) return;
-          clearKeys();
-          setConnection('API publique · clés non validées', `Connexion API publique : OK.\n${error.message}\nConsultation publique uniquement.`, 'invalid');
-        }
-      }
-      if (state.verified) setConnection('Authentification vérifiée', 'Connexion API publique : OK.\nAuthentification par clé API : OK (/users refusé anonymement puis accessible avec les clés). Les permissions d’écriture seront contrôlées par Omeka.', 'verified');
-      else if (publicOnly) setConnection('API publique · lecture seule', 'Connexion API publique : OK. Authentification non testée.', 'unverified');
+      const result = await backendRequest('/omeka/connect', { method: 'POST', body: { api_url: api, key_identity, key_credential } });
+      if (result?.verified !== true) throw appError('L’authentification Omeka n’a pas été validée par le serveur.');
+      state.verified = true; state.connected = true; state.api = api;
+      setConnection('Double connexion validée', result.message, 'verified');
       await discoverSchema();
       await loadResponses();
-      if (!state.models.length) showMessage('notification', 'Aucun LLM accessible dans la classe artinq:LLM. Création désactivée.', true);
+      if (!state.models.length) showMessage('notification', 'Aucun LLM accessible : création désactivée.', true);
     } catch (error) {
       if (generation !== state.generation) return;
-      if (!publicOK) { clearKeys(); state.connected = false; }
-      setConnection(publicOK ? 'API accessible · chargement incomplet' : 'API non connectée', `${publicOK ? 'Connexion API publique : OK.\n' : ''}${error.message}`, 'unreachable');
-      showMessage('results-message', error.message, true);
+      clearKeys(); state.connected = false; state.schema = null; state.responses = [];
+      byId('responses-body').replaceChildren();
+      setConnection('API non connectée', error.message, 'invalid');
     } finally {
       if (generation === state.generation) { state.connecting = false; syncControls(); }
     }
@@ -1499,8 +1535,8 @@
   // 13. Events — keyboard-accessible native dialogs and explicit confirmations.
   function bindEvents() {
     byId('connection-form').addEventListener('submit', event => { event.preventDefault(); connect(false); });
-    byId('public-access').addEventListener('click', () => connect(true));
-    byId('logout').addEventListener('click', () => disconnect());
+    byId('professor-form').addEventListener('submit', loginProfessor);
+    byId('logout').addEventListener('click', logoutProfessor);
     byId('toggle-key').addEventListener('click', () => {
       const input = byId('key-credential'); const visible = input.type === 'password';
       input.type = visible ? 'text' : 'password';
@@ -1521,14 +1557,20 @@
     for (const dialog of document.querySelectorAll('dialog')) {
       dialog.addEventListener('cancel', event => { if (state.busy) event.preventDefault(); });
     }
-    window.addEventListener('pagehide', () => disconnect());
+    window.addEventListener('pagehide', () => {
+      if (state.sessionToken) {
+        try { fetch(backendBaseUrl() + '/auth/logout', { method: 'POST', credentials: 'omit', keepalive: true,
+          headers: { Authorization: `Bearer ${state.sessionToken}` } }).catch(() => {}); } catch { /* Session expirera cote serveur. */ }
+      }
+      resetProfessorSession();
+    });
   }
 
   // 14. Initialization — zero automatic request and zero real write on page load.
   function initApp() {
     byId('api-url').value = DEFAULT_API;
     bindEvents();
-    disconnect('API non connectée. Saisissez vos clés Omeka S ou consultez les données publiques.');
+    resetProfessorSession();
   }
   initApp();
 })();
