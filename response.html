@@ -730,6 +730,10 @@
   </header>
   <main id="main" class="rsp-main">
     <section id="professor-panel" class="rsp-login" aria-label="Connexion professeur">
+      <nav aria-label="Authentification">
+        <button class="rsp-button rsp-button--primary" type="button" aria-current="page">Connexion</button>
+        <button id="open-register" class="rsp-button" type="button">Créer un compte</button>
+      </nav>
       <form id="professor-form" class="rsp-form">
         <div class="rsp-form__group">
           <label class="rsp-form__label" for="professor-email">Adresse e-mail</label>
@@ -742,8 +746,23 @@
         <button id="professor-submit" class="rsp-button rsp-button--primary" type="submit">Se connecter</button>
         <p id="professor-error" class="rsp-notification rsp-notification--error" role="alert" hidden=""></p>
       </form>
+      <p>Ou créer un compte et se connecter avec :</p>
+      <button class="rsp-button" type="button" data-oauth="google">Continuer avec Google</button>
+      <button class="rsp-button" type="button" data-oauth="github">Continuer avec GitHub</button>
+      <button id="oauth-cancel" class="rsp-button" type="button" hidden="">Annuler la connexion OAuth</button>
+      <details>
+        <summary>Problème de connexion Google ?</summary>
+        <p>Si Google indique que votre compte n'est pas autorisé, faites ajouter son adresse aux utilisateurs de test dans Google Auth Platform.</p>
+        <p>Pour redirect_uri_mismatch, vérifiez l'URI de redirection exacte du backend. En local : http://127.0.0.1:8085/auth/google/callback.</p>
+        <p>Pour invalid_client, vérifiez les identifiants du client Google de type Application Web, puis redémarrez Flask. Ces erreurs peuvent rester affichées chez Google : revenez ici et annulez la tentative avant de recommencer.</p>
+      </details>
     </section>
     <div id="omeka-stage" hidden="">
+    <p id="registration-success" class="rsp-notification rsp-notification--success" role="status" hidden=""></p>
+    <div id="oauth-link-actions" hidden="">
+      <button class="rsp-button" type="button" data-oauth-link="google">Associer Google</button>
+      <button class="rsp-button" type="button" data-oauth-link="github">Associer GitHub</button>
+    </div>
     <div class="rsp-intro">
 <p class="rsp-eyebrow">ARTIFICIAL INQUIRIES / EXERCICE 7B</p>
 <h2 class="rsp-intro__title">Explorer les réponses.</h2>
@@ -808,10 +827,51 @@
     </section>
     <div id="collection-note" class="rsp-note" hidden="">
 <span class="rsp-note__mark" aria-hidden="true">i</span>
-<p class="rsp-note__text">Protection de la collection : seules les réponses créées pendant cette session sont modifiables ou supprimables ici. Les ressources déjà présentes restent consultables. Après rechargement, utilisez l’administration Omeka pour gérer vos anciennes réponses. Sur mobile, faites défiler le tableau.</p></div>
+<p class="rsp-note__text">Les réponses identifiées 7B-REP- sont modifiables selon vos droits Omeka. La suppression exige une autorisation administrateur de l’application et une confirmation. Les identifiants ambigus restent en lecture seule. Sur mobile, faites défiler le tableau.</p></div>
     <noscript>
 <p>Activez JavaScript pour consulter l’API Omeka S.</p></noscript>
   </main>
+  <dialog id="oauth-link-dialog" class="rsp-dialog rsp-dialog--compact" aria-labelledby="oauth-link-title">
+    <form id="oauth-link-form" class="rsp-form">
+      <div class="rsp-dialog__header"><h2 id="oauth-link-title">Associer une identité</h2></div>
+      <div class="rsp-dialog__body">
+        <p>Confirmez le mot de passe de votre compte actuel. Vous devrez ensuite vous authentifier chez le fournisseur.</p>
+        <label class="rsp-form__label" for="oauth-link-password">Mot de passe actuel</label>
+        <input id="oauth-link-password" class="rsp-form__input" type="password" autocomplete="current-password" maxlength="1024" required="">
+      </div>
+      <div class="rsp-dialog__footer">
+        <button class="rsp-button" type="button" data-close="oauth-link-dialog">Annuler</button>
+        <button class="rsp-button rsp-button--primary" type="submit">Confirmer et continuer</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="register-dialog" class="rsp-dialog rsp-dialog--compact" aria-labelledby="register-title">
+    <form id="register-form" class="rsp-form">
+      <div class="rsp-dialog__header">
+        <h2 id="register-title">Créer un compte</h2>
+        <button class="rsp-button" type="button" data-close="register-dialog">Fermer</button>
+      </div>
+      <div class="rsp-dialog__body">
+        <div class="rsp-form__group">
+          <label class="rsp-form__label" for="register-email">Adresse e-mail</label>
+          <input id="register-email" class="rsp-form__input" type="email" autocomplete="username" maxlength="254" required="">
+        </div>
+        <div class="rsp-form__group">
+          <label class="rsp-form__label" for="register-password">Mot de passe (12 caractères minimum)</label>
+          <input id="register-password" class="rsp-form__input" type="password" autocomplete="new-password" minlength="12" maxlength="1024" required="">
+        </div>
+        <div class="rsp-form__group">
+          <label class="rsp-form__label" for="register-confirmation">Confirmer le mot de passe</label>
+          <input id="register-confirmation" class="rsp-form__input" type="password" autocomplete="new-password" minlength="12" maxlength="1024" required="">
+        </div>
+        <p>Votre compte sera activé et connecté dès l'inscription. Vos clés API Omeka S seront ensuite nécessaires pour accéder aux réponses.</p>
+        <p id="register-message" class="rsp-notification" role="status" hidden=""></p>
+      </div>
+      <div class="rsp-dialog__footer">
+        <button id="register-submit" class="rsp-button rsp-button--primary" type="submit">Créer mon compte</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="editor-dialog" class="rsp-dialog" aria-labelledby="editor-title">
     <form id="response-form" class="rsp-form">
       <div class="rsp-dialog__header">
@@ -826,7 +886,7 @@
         <div class="rsp-form__group">
 <label class="rsp-form__label" for="response-identifier">Identifiant (obligatoire)</label>
 <input id="response-identifier" class="rsp-form__input" type="text" required="" maxlength="150" aria-describedby="identifier-note">
-<p id="identifier-note" class="rsp-form__help">Proposition R001, R002… vérifiée avant création. Dans une base partagée, deux créations simultanées peuvent encore entrer en concurrence.</p></div>
+<p id="identifier-note" class="rsp-form__help">Proposition 7B-REP-001, 7B-REP-002… vérifiée avant création. Deux créations simultanées peuvent encore entrer en concurrence.</p></div>
         <div class="rsp-form__group">
 <label class="rsp-form__label" for="response-content">Description (obligatoire)</label>
 <textarea id="response-content" class="rsp-form__textarea" rows="6" required="" maxlength="100000"></textarea></div>
@@ -881,9 +941,9 @@
   // 2. Application state — no browser storage, cookies or persistent secrets.
   const state = {
     api: DEFAULT_API, verified: false, connected: false,
-    professor: false, sessionToken: '', expirationTimer: null, loginPending: false,
+    professor: false, sessionToken: '', expirationTimer: null, loginPending: false, oauthPending: false, canLinkOAuth: false,
     generation: 0, controllers: new Set(), schema: null,
-    models: [], responses: [], managed: new Map(), editor: null, deletion: null,
+    models: [], responses: [], permissions: null, editor: null, deletion: null,
     busy: false, loading: false, connecting: false, dialogLoading: false, mutationSent: false
   };
 
@@ -897,7 +957,7 @@
     const element = byId(id);
     element.textContent = message;
     element.dataset.error = String(error);
-    if (id.endsWith('-error') || id === 'notification') {
+    if (id.endsWith('-error') || ['notification', 'register-message', 'registration-success'].includes(id)) {
       element.hidden = !message;
       element.className = `rsp-notification rsp-notification--${error ? 'error' : 'success'}`;
     }
@@ -920,6 +980,11 @@
     byId('professor-submit').disabled = state.loginPending;
     byId('professor-email').disabled = state.loginPending;
     byId('professor-password').disabled = state.loginPending;
+    for (const button of document.querySelectorAll('[data-oauth], [data-oauth-link]')) button.disabled = state.oauthPending || state.loginPending;
+    byId('professor-submit').disabled = state.loginPending || state.oauthPending;
+    byId('open-register').disabled = state.oauthPending;
+    byId('oauth-cancel').hidden = !state.oauthPending;
+    byId('oauth-link-actions').hidden = !state.professor || !state.canLinkOAuth;
     byId('api-url').disabled = busy || state.connected;
     byId('key-identity').disabled = busy || state.verified;
     byId('key-credential').disabled = busy || state.verified;
@@ -931,7 +996,7 @@
     byId('add-response').disabled = !state.verified || !state.schema || !state.models.length || busy;
     byId('search').disabled = !state.connected || state.loading;
     for (const button of document.querySelectorAll('[data-mutation]')) {
-      button.disabled = busy || !canManage(Number(button.dataset.mutation));
+      button.disabled = busy || !canManage(Number(button.dataset.mutation), button.dataset.action);
     }
   }
 
@@ -951,7 +1016,6 @@
     clearKeys();
     Object.assign(state, { connected: false, schema: null, models: [], responses: [],
       editor: null, deletion: null, busy: false, loading: false, connecting: false, dialogLoading: false, mutationSent: false });
-    state.managed.clear();
     byId('response-form').reset();
     byId('response-model').replaceChildren();
     for (const element of document.querySelectorAll('dialog button, dialog input, dialog textarea, dialog select')) element.disabled = false;
@@ -989,6 +1053,10 @@
   function resetProfessorSession(message = '') {
     clearTimeout(state.expirationTimer);
     state.sessionToken = '';
+    state.permissions = null;
+    state.canLinkOAuth = false;
+    if (oauthAttempt) { oauthAttempt.cancelled = true; oauthAttempt.popup.close(); }
+    showMessage('registration-success', '');
     state.professor = false;
     state.loginPending = false;
     state.expirationTimer = null;
@@ -1040,6 +1108,122 @@
     }
   }
 
+  let registrationPending = false;
+  async function registerUser(event) {
+    event.preventDefault();
+    if (registrationPending || !byId('register-form').reportValidity()) return;
+    const email = byId('register-email').value.trim();
+    const password = byId('register-password').value;
+    const confirmation = byId('register-confirmation').value;
+    if (password !== confirmation) {
+      showMessage('register-message', 'La confirmation du mot de passe ne correspond pas.', true);
+      return;
+    }
+    registrationPending = true;
+    byId('register-submit').disabled = true;
+    showMessage('register-message', '');
+    byId('register-password').value = '';
+    byId('register-confirmation').value = '';
+    try {
+      const result = await backendRequest('/auth/register', { method: 'POST', body: { email, password, confirmation }, anonymous: true });
+      await acceptUserSession(result);
+      byId('register-dialog').close();
+      showMessage('registration-success', 'Votre compte a bien été créé ! Vous êtes maintenant connecté.');
+      byId('professor-email').value = email;
+    } catch (error) {
+      showMessage(byId('register-dialog').open ? 'register-message' : 'professor-error', error.message, true);
+    } finally {
+      registrationPending = false;
+      byId('register-submit').disabled = false;
+      syncControls();
+    }
+  }
+
+  async function acceptUserSession(result) {
+    if (result?.authenticated !== true || typeof result.token !== 'string' || result.token.length < 32 || !Number.isFinite(result.expires_in) || result.expires_in <= 0) throw appError('Session renvoyée par le serveur invalide.');
+    state.sessionToken = result.token;
+    try {
+      const status = await backendRequest('/auth/status');
+      if (status.authenticated !== true) throw appError('Session non validée.');
+      state.permissions = status.permissions || null;
+      state.canLinkOAuth = status.user?.can_link_oauth === true;
+      state.professor = true;
+      clearTimeout(state.expirationTimer);
+      state.expirationTimer = setTimeout(() => resetProfessorSession('Session expirée. Connectez-vous à nouveau.'), result.expires_in * 1000);
+      setConnection('Compte connecté', 'Saisissez les clés Omeka S pour accéder aux réponses.');
+    } catch (error) {
+      resetProfessorSession();
+      throw error;
+    }
+  }
+
+  let oauthAttempt = null;
+  let linkProvider = '';
+  async function startOAuth(provider, link = false, password = '') {
+    if (oauthAttempt || state.loginPending || registrationPending) return;
+    const popup = window.open('about:blank', '_blank', 'popup,width=520,height=720');
+    const messageId = link ? 'registration-success' : 'professor-error';
+    if (!popup) { showMessage(messageId, 'Autorisez les fenêtres de connexion dans votre navigateur.', true); return; }
+    const attempt = { popup, cancelled: false };
+    oauthAttempt = attempt;
+    state.oauthPending = true;
+    syncControls();
+    showMessage(messageId, 'Connexion en cours dans la fenêtre du fournisseur…');
+    let prepared, verifier, consumed = false;
+    const generation = state.generation;
+    try {
+      const bytes = crypto.getRandomValues(new Uint8Array(32));
+      verifier = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+      const challenge = btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      prepared = await backendRequest('/auth/oauth/prepare', { method: 'POST', anonymous: !link,
+        body: { provider, origin: location.origin, challenge, ...(link ? { link: true, password } : {}) } });
+      password = '';
+      const launch = new URL(prepared.login_url);
+      if (launch.origin !== new URL(backendBaseUrl()).origin || launch.pathname !== `/auth/${provider}/login`
+        || typeof prepared.flow_id !== 'string') throw appError('Adresse de connexion OAuth invalide.');
+      if (attempt.cancelled) throw appError('Connexion interrompue.');
+      popup.location.href = launch.href;
+      const deadline = Date.now() + 300000;
+      while (!attempt.cancelled && Date.now() < deadline) {
+        const result = await backendRequest('/auth/oauth/result', { method: 'POST', anonymous: true,
+          body: { flow_id: prepared.flow_id, verifier } });
+        if (result?.pending !== true) {
+          consumed = true;
+          if (link) {
+            if (result?.linked !== true) throw appError('Association non confirmée.');
+            showMessage(messageId, 'Identité associée avec succès à votre compte.');
+          } else {
+            await acceptUserSession(result);
+            showMessage('professor-error', '');
+            const message = provider === 'github'
+              ? `${result.new_account === true ? 'Votre compte GitHub a bien été créé ! ' : ''}Connexion GitHub réussie ! Votre compte est maintenant connecté.`
+              : result.new_account === true ? 'Votre compte Google a bien été créé ! Vous êtes maintenant connecté.' : 'Connexion Google réussie !';
+            showMessage('registration-success', message);
+          }
+          return;
+        }
+        // Certains fournisseurs isolent la fenêtre (COOP). Continuer à attendre
+        // le résultat serveur même si le navigateur indique popup.closed.
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      throw appError('Connexion OAuth expirée. Recommencez.');
+    } catch (error) {
+      if (generation === state.generation) showMessage(messageId, error.message, true);
+      else if (!state.professor) showMessage('professor-error', error.message, true);
+    } finally {
+      password = '';
+      popup.close();
+      if (prepared && verifier && !consumed) {
+        try { await backendRequest('/auth/oauth/result', { method: 'POST', anonymous: true,
+          body: { flow_id: prepared.flow_id, verifier, cancel: true } }); } catch { /* Expiration serveur après cinq minutes. */ }
+      }
+      oauthAttempt = null;
+      state.oauthPending = false;
+      syncControls();
+    }
+  }
+
   async function loginProfessor(event) {
     event.preventDefault();
     if (state.loginPending || !byId('professor-form').reportValidity()) return;
@@ -1051,13 +1235,7 @@
     syncControls();
     try {
       const result = await backendRequest('/auth/login', { method: 'POST', body: { email, password }, anonymous: true });
-      if (typeof result?.token !== 'string' || result.token.length < 32 || !Number.isFinite(result.expires_in) || result.expires_in <= 0) throw appError('Session renvoyée par le serveur invalide.');
-      state.sessionToken = result.token;
-      const status = await backendRequest('/auth/status');
-      if (status.authenticated !== true) throw appError('Session professeur non validée.');
-      state.professor = true;
-      state.expirationTimer = setTimeout(() => resetProfessorSession('Session expirée. Connectez-vous à nouveau.'), result.expires_in * 1000);
-      setConnection('Professeur connecté', 'Saisissez les clés Omeka S pour accéder aux réponses.');
+      await acceptUserSession(result);
     } catch (error) {
       resetProfessorSession(error.status === 401 ? 'Adresse e-mail ou mot de passe incorrect.' : error.message);
     } finally {
@@ -1117,7 +1295,18 @@
     return Boolean(state.schema && (item['o:resource_class']?.['o:id'] === state.schema.responseClass['o:id']
       || item['o:resource_template']?.['o:id'] === state.schema.template['o:id']));
   }
-  function canManage(id) { return state.verified && Boolean(state.schema) && state.managed.has(id); }
+  function isExerciseResponse(item) {
+    if (!state.schema || !item || item['o:resource_class']?.['o:id'] !== state.schema.responseClass['o:id']
+      || item['o:resource_template']?.['o:id'] !== state.schema.template['o:id']) return false;
+    const identifiers = ['dcterms:identifier', 'bibo:identifier'].flatMap(term => values(item, term));
+    return identifiers.length > 0 && identifiers.every(value => typeof value['@value'] === 'string'
+      && value['@value'].startsWith('7B-REP-') && value['@value'].length > 7);
+  }
+  function canManage(id, action = 'edit') {
+    const item = state.responses.find(row => row.id === id)?.raw;
+    return state.professor && state.verified && isExerciseResponse(item)
+      && (action !== 'delete' || state.permissions?.delete === true);
+  }
   function fingerprint(item) {
     const snapshot = {};
     for (const key of Object.keys(item).sort()) {
@@ -1306,8 +1495,10 @@
         button.setAttribute('aria-label', `${label} ${item.identifier || item.title} (item ${item.id})`);
         if (label !== 'Consulter') {
           button.dataset.mutation = String(item.id);
-          button.disabled = !canManage(item.id) || state.busy;
-          if (!canManage(item.id)) button.title = 'Lecture seule : réponse non créée pendant cette session.';
+          button.dataset.action = icon;
+          button.disabled = !canManage(item.id, icon) || state.busy;
+          if (!canManage(item.id, icon)) button.title = icon === 'delete' && state.permissions?.delete !== true
+            ? 'Suppression réservée à un administrateur de l’application.' : 'Lecture seule : appartenance à l’exercice 7B non confirmée.';
         }
         button.addEventListener('click', () => runRead(() => action(item.id)));
         group.append(button);
@@ -1343,8 +1534,8 @@
     if (!byId('view-dialog').open) byId('view-dialog').showModal();
   }
   function nextIdentifier() {
-    const max = Math.max(0, ...state.responses.map(row => /^R(\d+)$/.exec(row.identifier)).filter(Boolean).map(match => Number(match[1])));
-    return `R${String(max + 1).padStart(3, '0')}`;
+    const max = Math.max(0, ...state.responses.map(row => /^7B-REP-(\d+)$/.exec(row.identifier)).filter(Boolean).map(match => Number(match[1])));
+    return `7B-REP-${String(max + 1).padStart(3, '0')}`;
   }
   function openEditor(item = null) {
     if (!state.verified || !state.schema || !state.models.length || state.busy || state.loading || byId('editor-dialog').open) return;
@@ -1373,7 +1564,7 @@
     openEditor(await readItem(id));
   }
   async function openDelete(id) {
-    if (!canManage(id)) throw appError('Cette réponse est protégée dans cette interface.');
+    if (!canManage(id, 'delete')) throw appError('Suppression non autorisée dans cette interface.');
     state.deletion = await readItem(id);
     const item = parseResponse(state.deletion);
     showMessage('delete-error', '');
@@ -1390,6 +1581,7 @@
       if (!data[field]) throw appError('Les champs obligatoires ne peuvent pas contenir uniquement des espaces.');
     }
     data.model = Number(byId('response-model').value);
+    if (!data.identifier.startsWith('7B-REP-') || data.identifier.length <= 7) throw appError('Utilisez un identifiant commençant par 7B-REP-.');
     if (!state.models.some(item => item['o:id'] === data.model)) throw appError('Sélectionnez un LLM accessible dans la liste.');
     return data;
   }
@@ -1432,11 +1624,10 @@
       throw appError('Cet identifiant existe déjà parmi les réponses accessibles. Choisissez-en un autre.');
     }
   }
-  async function guardedItem(snapshot) {
-    if (!canManage(snapshot['o:id'])) throw appError('Modification interdite : item non créé pendant cette session.');
+  async function guardedItem(snapshot, action = 'edit') {
+    if (!canManage(snapshot['o:id'], action)) throw appError('Opération non autorisée pour cette réponse.');
     const current = await readItem(snapshot['o:id']);
-    const owner = state.managed.get(snapshot['o:id']);
-    if (!owner || current['o:owner']?.['o:id'] !== owner) throw appError('Le propriétaire de cette réponse a changé : opération annulée.');
+    if (!isExerciseResponse(current)) throw appError('Cette réponse ne fait plus partie de l’exercice 7B.');
     if (fingerprint(current) !== fingerprint(snapshot)) throw appError('Cette réponse a changé depuis son ouverture. Fermez puis rouvrez la fenêtre.');
     return current;
   }
@@ -1465,8 +1656,8 @@
     await ensureUniqueIdentifier(data.identifier);
     const created = await request('items', { method: 'POST', body: buildPayload(data) });
     if (!Number.isSafeInteger(created?.['o:id'])) throw appError('Création non confirmée. Vérifiez Omeka avant de réessayer.');
-    const ownerId = created['o:owner']?.['o:id'];
-    if (Number.isSafeInteger(ownerId)) state.managed.set(created['o:id'], ownerId);
+    const status = await backendRequest('/auth/status');
+    state.permissions = status.permissions || null;
     const saved = await readItem(created['o:id']);
     verifySaved(saved, data);
     return saved;
@@ -1483,11 +1674,10 @@
     return saved;
   }
 
-  // 12. Delete — one explicitly confirmed item, with owner and version checks.
+  // 12. Delete — one explicitly confirmed 7B item, with role and version checks.
   async function deleteItem() {
-    const current = await guardedItem(state.deletion);
-    await request(`items/${current['o:id']}`, { method: 'DELETE' });
-    state.managed.delete(current['o:id']);
+    const current = await guardedItem(state.deletion, 'delete');
+    await request(`items/${current['o:id']}`, { method: 'DELETE', body: { confirm_item_id: current['o:id'] } });
   }
   async function performMutation(kind) {
     if (state.busy || !state.verified || state.loading || state.connecting) return;
@@ -1534,8 +1724,38 @@
 
   // 13. Events — keyboard-accessible native dialogs and explicit confirmations.
   function bindEvents() {
+    byId('oauth-cancel').addEventListener('click', () => {
+      if (oauthAttempt) { oauthAttempt.cancelled = true; oauthAttempt.popup.close(); }
+    });
+    for (const button of document.querySelectorAll('[data-oauth]')) button.addEventListener('click', () => startOAuth(button.dataset.oauth));
+    for (const button of document.querySelectorAll('[data-oauth-link]')) button.addEventListener('click', () => {
+      linkProvider = button.dataset.oauthLink;
+      byId('oauth-link-password').value = '';
+      byId('oauth-link-dialog').showModal();
+    });
+    byId('oauth-link-form').addEventListener('submit', event => {
+      event.preventDefault();
+      if (!byId('oauth-link-form').reportValidity()) return;
+      const password = byId('oauth-link-password').value;
+      byId('oauth-link-password').value = '';
+      byId('oauth-link-dialog').close();
+      startOAuth(linkProvider, true, password);
+    });
+    byId('oauth-link-dialog').addEventListener('close', () => { byId('oauth-link-password').value = ''; });
     byId('connection-form').addEventListener('submit', event => { event.preventDefault(); connect(false); });
     byId('professor-form').addEventListener('submit', loginProfessor);
+    byId('register-form').addEventListener('submit', registerUser);
+    byId('open-register').addEventListener('click', () => {
+      if (!registrationPending) {
+        byId('register-form').reset();
+        showMessage('register-message', '');
+        byId('register-dialog').showModal();
+      }
+    });
+    byId('register-dialog').addEventListener('close', () => {
+      byId('register-password').value = '';
+      byId('register-confirmation').value = '';
+    });
     byId('logout').addEventListener('click', logoutProfessor);
     byId('toggle-key').addEventListener('click', () => {
       const input = byId('key-credential'); const visible = input.type === 'password';
